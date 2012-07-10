@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define VERSION "0.1"
+#define VERSION "0.2"
 
 typedef struct sched_switch_struct
 {
@@ -104,6 +104,9 @@ main (int argc, char **argv)
   char from_state[1000];
   char to_state[1000];
   char wakeup_str[1000];
+  char sched_event[1000];
+  char prev_comm[1000];
+  char next_comm[1000];
   unsigned int n_program = 0;
   program_type *program = NULL;
   unsigned int n_state = 0;
@@ -161,6 +164,8 @@ main (int argc, char **argv)
       last_comment = n_sched_switch;
     }
     to_cpu = (unsigned int) -1;
+
+    strcpy(to_state, "R");
     if (sscanf
 	(line, " %s [ %u ] %lf : %u : %u : %s %s %u : %u : %s ", program_name,
 	 &from_cpu, &time, &from_pid, &from_prio, from_state, wakeup_str,
@@ -168,7 +173,12 @@ main (int argc, char **argv)
 	sscanf (line, " %s [ %u ] %lf : %u : %u : %s %s [ %u ] %u : %u : %s ",
 		program_name, &from_cpu, &time, &from_pid, &from_prio,
 		from_state, wakeup_str, &to_cpu, &to_pid, &to_prio,
-		to_state) == 11) {
+		to_state) == 11 ||
+	sscanf (line, " %s [ %u ] %lf : %s prev_comm= %s prev_pid= %u prev_prio= %u prev_state= %s"
+		"%s next_comm= %s next_pid= %u next_prio= %u",
+		program_name, &from_cpu, &time, sched_event, prev_comm,
+		&from_pid, &from_prio, from_state, wakeup_str, next_comm,
+		&to_pid, &to_prio) == 12 ) {
       for (i=0; i<strlen(program_name); i++)
       {
         if ( program_name[i] == ':' )
